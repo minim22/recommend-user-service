@@ -3,7 +3,7 @@ spring:
         name: recommend-user-service
 
     config:
-        import: configserver:http://localhost:10000
+        import: configserver:http://localhost:10500
 
     datasource:
         url: jdbc:postgresql://localhost:5432/recommend_db
