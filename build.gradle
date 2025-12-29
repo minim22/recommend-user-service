@@ -21,6 +21,7 @@ configurations {
 }
 
 repositories {
+	mavenLocal() // kafka jar를 받아오기위해
 	mavenCentral()
 }
 
@@ -37,13 +38,29 @@ dependencies {
 	implementation 'org.springframework.cloud:spring-cloud-starter-config'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 	// JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+	// lombok
 	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// postgresql
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// jpa
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// springdoc
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
+
+    // jar 연동
+    implementation 'com.custom:recommend-kafka:0.0.1-SNAPSHOT'
+
+    // [Test]
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
