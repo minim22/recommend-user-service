@@ -10,7 +10,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.custom.recommend_user_service.exception.CustomException;
+import com.custom.recommend_user_service.exception.ApiException;
 import com.custom.recommend_user_service.security.jwt.JwtTokenProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,9 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
             
-        } catch (final CustomException e) {
+        } catch (final ApiException e) {
             log.warn("JWT authentication failed: code={}, message={}", 
-                e.getErrorCode().getCode(), 
+                e.getResultCode().getCode(),
                 e.getMessage()
             );
             setErrorResponse(response, e);
@@ -82,17 +82,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      */
     private void setErrorResponse(
         final HttpServletResponse response,
-        final CustomException e
+        final ApiException e
     ) throws IOException {
-        response.setStatus(e.getErrorCode().getStatusCode());
+        response.setStatus(e.getResultCode().getStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
         final Map<String, Object> errorResponse = Map.of(
-            "code", e.getErrorCode().getCode(),
-            "title", e.getErrorCode().getTitle(),
-            "message", e.getErrorCode().getMessage(),
-            "status", e.getErrorCode().getStatusCode()
+            "code", e.getResultCode().getCode(),
+            "title", e.getResultCode().getTitle(),
+            "message", e.getResultCode().getMessage(),
+            "status", e.getResultCode().getStatus()
         );
 
         response.getWriter().write(objectMapper.writeValueAsString(errorResponse));

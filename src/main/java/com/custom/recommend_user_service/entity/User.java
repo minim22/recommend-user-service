@@ -2,6 +2,10 @@ package com.custom.recommend_user_service.entity;
 
 import java.time.LocalDateTime;
 
+import com.custom.recommend_user_service.enums.Provider;
+import com.custom.recommend_user_service.enums.Role;
+import com.custom.recommend_user_service.enums.UserStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -205,21 +209,5 @@ public class User {
      */
     public boolean isOAuthUser() {
         return this.provider != null;
-    }
-
-    // === Enum 정의 ===
-    public enum Provider {
-        GOOGLE, KAKAO, NAVER
-    }
-
-    public enum Role {
-        USER,   // 일반 사용자
-        ADMIN   // 관리자
-    }
-
-    public enum UserStatus {
-        ACTIVE,     // 활성
-        INACTIVE,   // 비활성
-        DELETED     // 삭제
     }
 }

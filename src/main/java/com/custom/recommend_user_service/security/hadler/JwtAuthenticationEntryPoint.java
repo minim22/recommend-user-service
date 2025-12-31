@@ -8,7 +8,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.custom.recommend_user_service.exception.ErrorCode;
+import com.custom.recommend_user_service.enums.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +35,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         final ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
 
-        response.setStatus(errorCode.getStatusCode());
+        response.setStatus(errorCode.getStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
@@ -43,7 +43,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             "code", errorCode.getCode(),
             "title", errorCode.getTitle(),
             "message", errorCode.getMessage(),
-            "status", errorCode.getStatusCode(),
+            "status", errorCode.getStatus(),
             "path", request.getRequestURI()
         );
 

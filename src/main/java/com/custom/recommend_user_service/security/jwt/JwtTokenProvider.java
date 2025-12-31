@@ -1,7 +1,6 @@
 package com.custom.recommend_user_service.security.jwt;
 
 import java.nio.charset.StandardCharsets;
-import java.security.SignatureException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -10,6 +9,7 @@ import java.util.List;
 
 import javax.crypto.SecretKey;
 
+import com.custom.recommend_user_service.exception.ApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,8 +17,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import com.custom.recommend_user_service.exception.CustomException;
-import com.custom.recommend_user_service.exception.ErrorCode;
+import com.custom.recommend_user_service.dto.response.TokenResponse;
+import com.custom.recommend_user_service.entity.User;
+import com.custom.recommend_user_service.enums.ErrorCode;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -26,6 +27,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -40,6 +42,13 @@ public class JwtTokenProvider {
     private final SecretKey secretKey;
     private final long accessTokenValidityInSeconds;
     private final long refreshTokenValidityInSeconds;
+
+    // 30분 * 60초 * 1000ms = 1,800,000ms
+    private long ACCESS_TOKEN_EXPIRE_TIME = 1000L * 60 * 30;
+
+    // 2. Refresh Token: 3일
+    // 3일 * 24시간 * 60분 * 60초 * 1000ms = 259,200,000ms
+    private long REFRESH_TOKEN_EXPIRE_TIME = 1000L * 60 * 60 * 24 * 3;
 
     public JwtTokenProvider(
         @Value("${jwt.secret}") final String secret,
@@ -86,6 +95,45 @@ public class JwtTokenProvider {
     }
 
     /**
+     * Accesstoken + Refreshtoken
+     * - 알고리즘 : ES256
+     * @param user 유저
+     * @return
+     */
+    public TokenResponse createToken(User user){
+
+        // 현재시간
+        long now = System.currentTimeMillis();
+
+        // Access Token 생성 및 만료 설정
+        Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
+        String accessToken = Jwts.builder()
+                .subject(user.getEmail())
+                .claim("auth", user.getRole())
+                .claim("type", "access")
+                .issuedAt(new Date(now))
+                .signWith(secretKey)
+                .expiration(accessTokenExpiresIn)
+                .compact();
+
+        // Refresh Token 생성 및 만료 설정
+        Date refreshTokenExpiresIn = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
+        String refreshToken = Jwts.builder()
+                .issuedAt(new Date(now))
+                .expiration(refreshTokenExpiresIn)
+                .signWith(secretKey)
+                .compact();
+
+        return new TokenResponse(
+            "Bearer",
+            accessToken,
+            refreshToken,
+            accessTokenExpiresIn.getTime(),
+            refreshTokenExpiresIn.getTime()
+        );
+    }
+
+    /**
      * 토큰에서 Authentication 추출
      */
     public Authentication getAuthentication(final String token) {
@@ -125,16 +173,16 @@ public class JwtTokenProvider {
             return true;
         } catch (final MalformedJwtException e) {
             log.warn("Invalid JWT token: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
+            throw new ApiException(ErrorCode.INVALID_TOKEN);
         } catch (final ExpiredJwtException e) {
             log.warn("Expired JWT token: {}", e.getMessage());
-            throw new CustomException(ErrorCode.EXPIRED_TOKEN);
+            throw new ApiException(ErrorCode.EXPIRED_TOKEN);
         } catch (final UnsupportedJwtException e) {
             log.warn("Unsupported JWT token: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
+            throw new ApiException(ErrorCode.INVALID_TOKEN);
         } catch (final IllegalArgumentException e) {
             log.warn("JWT token compact of handler are invalid: {}", e.getMessage());
-            throw new CustomException(ErrorCode.INVALID_TOKEN);
+            throw new ApiException(ErrorCode.INVALID_TOKEN);
         }
     }
 

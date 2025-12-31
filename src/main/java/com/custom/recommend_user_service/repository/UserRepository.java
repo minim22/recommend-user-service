@@ -5,7 +5,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.custom.recommend_user_service.entity.User;
-import com.custom.recommend_user_service.entity.User.Provider;
+import com.custom.recommend_user_service.enums.Provider;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     // 일반 로그인용

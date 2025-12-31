@@ -2,6 +2,8 @@ package com.custom.recommend_user_service.exception;
 
 import java.time.LocalDateTime;
 
+import com.custom.recommend_user_service.enums.ResultCode;
+
 /**
  * 에러 응답 DTO
  * 
@@ -25,71 +27,30 @@ public record ErrorResponse(
     String path
 ) {
     /**
-     * ErrorCode로부터 ErrorResponse 생성
+     * ResultCode(ErrorCode 포함)를 기반으로 ErrorResponse 생성
      */
-    public static ErrorResponse of(final ErrorCode errorCode) {
+    public static ErrorResponse of(final ResultCode resultCode, final String path) {
         return new ErrorResponse(
-            errorCode.getCode(),
-            errorCode.getTitle(),
-            errorCode.getMessage(),
-            errorCode.getStatusCode(),
-            LocalDateTime.now(),
-            null
-        );
-    }
-
-    /**
-     * ErrorCode와 경로로 ErrorResponse 생성
-     */
-    public static ErrorResponse of(final ErrorCode errorCode, final String path) {
-        return new ErrorResponse(
-            errorCode.getCode(),
-            errorCode.getTitle(),
-            errorCode.getMessage(),
-            errorCode.getStatusCode(),
+            resultCode.getCode(),
+            resultCode.getTitle(),
+            resultCode.getMessage(),
+            resultCode.getStatus(),
             LocalDateTime.now(),
             path
         );
     }
 
     /**
-     * 커스텀 메시지로 ErrorResponse 생성
+     * 메시지를 커스텀하고 싶을 때 사용하는 생성 메서드
      */
-    public static ErrorResponse of(
-        final ErrorCode errorCode,
-        final String customMessage,
-        final String path
-    ) {
+    public static ErrorResponse of(final ResultCode resultCode, final String customMessage, final String path) {
         return new ErrorResponse(
-            errorCode.getCode(),
-            errorCode.getTitle(),
+            resultCode.getCode(),
+            resultCode.getTitle(),
             customMessage,
-            errorCode.getStatusCode(),
-            LocalDateTime.now(),
-            path
-        );
-    }
-
-    /**
-     * 완전 커스텀 ErrorResponse 생성 (validation 등)
-     */
-    public static ErrorResponse of(
-        final String code,
-        final String title,
-        final String message,
-        final Integer status,
-        final String path
-    ) {
-        return new ErrorResponse(
-            code,
-            title,
-            message,
-            status,
+            resultCode.getStatus(),
             LocalDateTime.now(),
             path
         );
     }
 }
-
-
-

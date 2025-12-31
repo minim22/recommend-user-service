@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import com.custom.recommend_user_service.enums.ErrorCode;
+import com.custom.recommend_user_service.enums.ResultCode;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,21 +24,26 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(CustomException.class)
+    @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleCustomException(
-        final CustomException e,
+        final ApiException e,
         final HttpServletRequest request
     ) {
-        final ErrorCode errorCode = e.getErrorCode();
-        log.warn("CustomException: code={}, message={}, path={}", 
-            errorCode.getCode(), 
-            e.getMessage(), 
+        final ResultCode resultCode = e.getResultCode();
+        log.warn("ApiException: code={}, message={}, path={}",
+            resultCode.getCode(),
+            e.getResponseMessage(),
             request.getRequestURI()
         );
 
-        final ErrorResponse response = ErrorResponse.of(errorCode, request.getRequestURI());
+        final ErrorResponse response = ErrorResponse.of(
+            resultCode,
+            e.getResponseMessage(),
+            request.getRequestURI()
+        );
+
         return ResponseEntity
-            .status(errorCode.getStatus())
+            .status(resultCode.getStatus())
             .body(response);
     }
 
@@ -60,10 +68,8 @@ public class GlobalExceptionHandler {
             .orElse("입력값이 올바르지 않습니다.");
 
         final ErrorResponse response = ErrorResponse.of(
-            "E-C001",
-            "잘못된 입력값",
+            ErrorCode.INVALID_INPUT_VALUE,
             errorMessage,
-            HttpStatus.BAD_REQUEST.value(),
             request.getRequestURI()
         );
 
@@ -80,9 +86,9 @@ public class GlobalExceptionHandler {
         final MethodArgumentTypeMismatchException e,
         final HttpServletRequest request
     ) {
-        log.warn("TypeMismatchException: parameter={}, value={}, requiredType={}", 
-            e.getName(), 
-            e.getValue(), 
+        log.warn("TypeMismatchException: parameter={}, value={}, requiredType={}",
+            e.getName(),
+            e.getValue(),
             e.getRequiredType()
         );
 
@@ -112,8 +118,8 @@ public class GlobalExceptionHandler {
         final HttpRequestMethodNotSupportedException e,
         final HttpServletRequest request
     ) {
-        log.warn("MethodNotSupportedException: method={}, path={}", 
-            e.getMethod(), 
+        log.warn("MethodNotSupportedException: method={}, path={}",
+            e.getMethod(),
             request.getRequestURI()
         );
 

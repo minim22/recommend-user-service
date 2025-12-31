@@ -7,7 +7,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-import com.custom.recommend_user_service.exception.ErrorCode;
+import com.custom.recommend_user_service.enums.ErrorCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -29,13 +29,13 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
     ) throws IOException, JsonProcessingException, IOException {
         
         log.warn("Forbidden request: path={}, message={}",
-            request.getRequestURI(), 
+            request.getRequestURI(),
             accessDeniedException.getMessage()
         );
 
         final ErrorCode errorCode = ErrorCode.FORBIDDEN;
 
-        response.setStatus(errorCode.getStatusCode());
+        response.setStatus(errorCode.getStatus());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
 
@@ -43,7 +43,7 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
             "code", errorCode.getCode(),
             "title", errorCode.getTitle(),
             "message", errorCode.getMessage(),
-            "status", errorCode.getStatusCode(),
+            "status", errorCode.getStatus(),
             "path", request.getRequestURI()
         );
 
